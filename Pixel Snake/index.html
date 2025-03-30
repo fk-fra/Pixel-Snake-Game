@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gioco dello Snake</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<!-- La classe 'game-active' viene aggiunta/rimossa da JS per cambiare layout -->
+<body>
+
+    <!-- ========================== -->
+    <!--      PULSANTI GLOBALI      -->
+    <!-- ========================== -->
+    <div class="main-buttons">
+        <button id="account-button" class="retro-button">Account</button>
+        <button id="leaderboard-button" class="retro-button">Classifica</button>
+        <!-- Bottone Home (mostrato solo in gioco) -->
+        <button id="home-button" class="retro-button home-button">Home</button>
+    </div>
+
+    <!-- ========================== -->
+    <!--   TITOLO E PUNTEGGIO UI    -->
+    <!-- ========================== -->
+    <h1>Gioco dello Snake</h1>
+
+    <!-- Display Punteggio Normale (fuori dal gioco) -->
+    <div class="punteggio-container">
+        <span id="nickname-display" class="nickname-info"></span> <!-- Mostra utente loggato -->
+        Punteggio: <span id="punteggio">0</span>
+        <!-- Potrebbe mostrare anche High Score qui -->
+    </div>
+
+    <!-- Display Punteggio In-Game (visibile durante il gioco) -->
+    <div class="in-game-score-display">
+        Punteggio: <span id="in-game-punteggio">0</span>
+    </div>
+
+    <!-- ========================== -->
+    <!--      AREA DI GIOCO         -->
+    <!-- ========================== -->
+    <div class="game-container">
+        <canvas id="game-board" width="400" height="400"></canvas>
+        <!-- Overlay Game Over -->
+        <div id="game-over" class="game-over-overlay">
+            <h2>Game Over!</h2>
+            <p>Punteggio finale: <span id="punteggio-finale">0</span></p>
+            <button id="restart-button" class="retro-button">Rigioca</button>
+        </div>
+    </div>
+
+    <!-- ========================== -->
+    <!--         MODAL LOGIN        -->
+    <!-- ========================== -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Accedi</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-nickname">Nickname:</label>
+                    <input type="text" id="login-nickname" name="nickname" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" name="password" required autocomplete="current-password">
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="retro-button">Accedi</button>
+                    <button type="button" id="close-login-modal-button" class="retro-button alt">Chiudi</button>
+                </div>
+            </form>
+            <div class="switch-form-link">
+                Non hai un account?
+                <button type="button" id="show-registration-button" class="link-button">Crea account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================== -->
+    <!--     MODAL REGISTRAZIONE    -->
+    <!-- ========================== -->
+    <div id="registration-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Crea Nuovo Account</h2>
+            <form id="registration-form">
+                 <div class="form-group">
+                    <label for="reg-first-name">Nome:</label>
+                    <input type="text" id="reg-first-name" name="regFirstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-last-name">Cognome:</label>
+                    <input type="text" id="reg-last-name" name="regLastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-nickname">Nuovo Nickname:</label>
+                    <input type="text" id="reg-nickname" name="regNickname" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Crea Password:</label>
+                    <input type="password" id="reg-password" name="regPassword" required autocomplete="new-password">
+                </div>
+                 <div class="modal-buttons">
+                    <button type="submit" class="retro-button">Crea Account</button>
+                    <button type="button" id="close-registration-modal-button" class="retro-button alt">Annulla</button>
+                </div>
+            </form>
+             <div class="switch-form-link">
+                Hai già un account?
+                <button type="button" id="show-login-button" class="link-button">Accedi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================== -->
+    <!--  MODAL GESTIONE ACCOUNT    -->
+    <!-- ========================== -->
+    <div id="account-management-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Gestisci Account</h2>
+            <form id="account-management-form">
+                <div class="form-group">
+                    <label for="mgmt-nickname">Nickname:</label>
+                    <input type="text" id="mgmt-nickname" name="mgmtNickname" required>
+                </div>
+                <div class="form-group">
+                    <label for="mgmt-current-password">Password Attuale (per modifiche):</label>
+                    <input type="password" id="mgmt-current-password" name="mgmtCurrentPassword" required autocomplete="current-password">
+                </div>
+                <hr class="separator">
+                <div class="form-group toggle-password-container">
+                    <button type="button" id="toggle-password-change-button" class="link-button">Cambia Password</button>
+                </div>
+                <div id="new-password-section" class="hidden">
+                    <div class="form-group">
+                        <label for="mgmt-new-password">Nuova Password:</label>
+                        <input type="password" id="mgmt-new-password" name="mgmtNewPassword" autocomplete="new-password">
+                    </div>
+                </div>
+                 <div class="modal-buttons">
+                    <button type="submit" class="retro-button">Salva Modifiche</button>
+                    <button type="button" id="logout-button" class="retro-button danger">Esci</button>
+                    <button type="button" id="close-mgmt-modal-button" class="retro-button alt">Chiudi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================== -->
+    <!--      MODAL CLASSIFICA      -->
+    <!-- ========================== -->
+    <div id="leaderboard-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Classifica Top 10</h2>
+            <ol id="leaderboard-list" class="leaderboard">
+                <li>Caricamento...</li>
+            </ol>
+            <hr class="separator">
+            <div id="user-rank-info" class="user-rank">
+                Accedi per vedere la tua posizione.
+            </div>
+            <div class="modal-buttons">
+                 <button type="button" id="close-leaderboard-button" class="retro-button alt">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================== -->
+    <!--      SCRIPT JAVASCRIPT     -->
+    <!-- ========================== -->
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+/* ============================ */
+/* --- IMPORT & VARIABLES --- */
+/* ============================ */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+    /* Font */
+    --font-primary: 'Press Start 2P', cursive;
+
+    /* Colors - Base */
+    --color-bg: #1a1a1a;
+    --color-text: #f0f0f0;
+    --color-text-secondary: #aaaaaa;
+    --color-dark: #000000;
+
+    /* Colors - Accents & UI */
+    --color-primary: #00ff00;   /* Verde acceso principale (Snake, Bottoni primari) */
+    --color-secondary: #ff00ff; /* Magenta secondario (Ombre testo) */
+    --color-accent: #00ffff;    /* Ciano per accenti (Modal border, link) */
+    --color-highlight: #ffff00; /* Giallo per highlight/hover (Bottoni hover, Classifica rank) */
+    --color-danger: #ff3333;    /* Rosso per danger/logout/alt (Bottoni alt, Game Over) */
+
+    /* Colors - Game Specific */
+    --color-snake-body: var(--color-primary);
+    --color-snake-border: #008800; /* Verde scuro */
+    --color-food-body: #ff0000;    /* Rosso cibo normale */
+    --color-food-border: #880000;  /* Rosso scuro */
+    --color-food-golden-body: #ffd700; /* Oro cibo speciale */
+    --color-food-golden-border: #b8860b;/* Marrone dorato scuro */
+
+    /* Colors - Shadows */
+    --color-shadow-light: rgba(255, 255, 255, 0.7);
+    --color-shadow-dark: rgba(0, 0, 0, 0.5);
+
+    /* Borders & Radius */
+    --border-width-thick: 6px;
+    --border-width-modal: 4px;
+    --border-radius-main: 5px;
+    --border-radius-slight: 3px;
+}
+
+/* ============================ */
+/* --- RESET & GLOBALS --- */
+/* ============================ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--color-bg);
+    font-family: var(--font-primary);
+    color: var(--color-text);
+    padding: 20px;
+    text-rendering: optimizeLegibility;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease;
+    overflow-x: hidden; /* Previene scroll orizzontale se qualcosa sborda */
+}
+
+/* ============================ */
+/* --- LAYOUT ELEMENTS --- */
+/* ============================ */
+.main-buttons {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.main-buttons .retro-button {
+    margin-bottom: 0; /* Rimuovi margine, usa gap */
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: var(--color-primary);
+    text-shadow: 3px 3px 0px var(--color-secondary);
+    text-align: center;
+    transition: opacity 0.3s ease-out, max-height 0.3s ease-out, margin 0.3s ease-out, padding 0.3s ease-out, border 0.3s ease-out;
+    opacity: 1;
+    max-height: 100px; /* Stima altezza massima */
+    overflow: hidden;
+    line-height: 1.2;
+    padding: 10px 0;
+    border: none;
+}
+
+/* Contenitore Punteggio (Generale) */
+.punteggio-container,
+.in-game-score-display {
+    font-size: 0.9em;
+    color: var(--color-text);
+    text-align: center;
+    line-height: 1.5;
+    width: 100%;
+    max-width: 400px; /* Allineato con larghezza gioco */
+    transition: opacity 0.3s ease, max-height 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    padding: 5px 0;
+}
+
+/* Punteggio Normale (Visibile di default) */
+.punteggio-container {
+    opacity: 1;
+    max-height: 100px;
+    overflow: visible;
+    margin-bottom: 15px;
+}
+.nickname-info {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--color-highlight);
+    font-size: 0.9em;
+    min-height: 1.2em; /* Per evitare salti di layout se vuoto */
+    word-wrap: break-word; /* Se nickname è lungo */
+}
+#punteggio {
+    color: var(--color-text);
+    display: inline-block;
+    padding: 0 5px;
+}
+
+/* Punteggio In-Game (Nascosto di default) */
+.in-game-score-display {
+    display: none; /* Inizia nascosto */
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: 1em;
+    margin-bottom: 0;
+    padding: 0;
+}
+#in-game-punteggio {
+    color: var(--color-text);
+    display: inline-block;
+    padding: 0 5px;
+}
+
+/* Contenitore Gioco */
+.game-container {
+    position: relative;
+    width: 400px; /* Mantenere fisso per canvas */
+    height: 400px; /* Mantenere fisso per canvas */
+    border: var(--border-width-thick) solid var(--color-dark);
+    border-right-color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+    background-color: var(--color-dark);
+    line-height: 0; /* Per rimuovere spazi sotto canvas */
+    transition: margin 0.3s ease-out, transform 0.3s ease-out;
+    border-radius: 0;
+    overflow: hidden; /* Nasconde overlay se non attivo */
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+/* ============================ */
+/* --- COMPONENTI UI --- */
+/* ============================ */
+
+/* --- Pulsanti --- */
+.retro-button {
+    padding: 10px 18px;
+    font-family: var(--font-primary);
+    font-size: 0.7em;
+    cursor: pointer;
+    background-color: var(--color-primary);
+    color: var(--color-dark);
+    border: 2px solid var(--color-dark);
+    border-radius: var(--border-radius-slight);
+    box-shadow: 3px 3px 0px var(--color-shadow-light);
+    transition: all 0.1s ease-out;
+    text-transform: uppercase;
+    margin-bottom: 15px; /* Mantenuto per layout fuori da flex/grid con gap */
+    display: inline-block;
+    position: relative; /* Per effetto :active */
+    top: 0; left: 0;
+}
+.retro-button:hover {
+    background-color: var(--color-highlight);
+    color: var(--color-dark);
+    box-shadow: 3px 3px 0px var(--color-secondary);
+}
+.retro-button:active {
+    box-shadow: 1px 1px 0px var(--color-shadow-light);
+    top: 2px;
+    left: 2px;
+}
+
+/* Pulsante Alternativo (Chiudi/Annulla) */
+.retro-button.alt {
+    background-color: var(--color-danger);
+    color: var(--color-text);
+    box-shadow: 3px 3px 0px var(--color-highlight);
+}
+.retro-button.alt:hover {
+    background-color: #ff8800; /* Arancione */
+    color: var(--color-dark);
+    box-shadow: 3px 3px 0px var(--color-accent);
+}
+.retro-button.alt:active {
+    box-shadow: 1px 1px 0px var(--color-highlight);
+    top: 2px; left: 2px;
+}
+
+/* Pulsante Pericolo (Logout) */
+.retro-button.danger {
+    background-color: var(--color-danger);
+    color: var(--color-text);
+    box-shadow: 3px 3px 0px #880000; /* Ombra rosso scuro */
+}
+.retro-button.danger:hover {
+    background-color: #cc0000; /* Rosso più scuro */
+    color: var(--color-text);
+    box-shadow: 3px 3px 0px var(--color-highlight);
+}
+.retro-button.danger:active {
+    box-shadow: 1px 1px 0px #880000;
+    top: 2px; left: 2px;
+}
+
+/* Pulsante Home (Speciale) */
+#home-button {
+    display: none; /* Inizialmente nascosto */
+    position: fixed; /* Sopra tutto */
+    top: 20px;
+    left: 20px;
+    z-index: 1100; /* Sopra il gioco ma sotto i modal */
+    margin-bottom: 0;
+}
+
+/* Pulsante Link (Switch Form) */
+.link-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0 0 5px;
+    font-family: var(--font-primary);
+    font-size: 1em; /* Eredita dimensione */
+    color: var(--color-accent);
+    text-decoration: underline;
+    cursor: pointer;
+    display: inline;
+    transition: color 0.2s ease;
+}
+.link-button:hover {
+    color: var(--color-highlight);
+}
+
+/* --- Modals --- */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.90); /* Sfondo scuro semi-trasparente */
+    display: none; /* Mostrato da JS con .active */
+    justify-content: center;
+    align-items: center;
+    z-index: 1200; /* Sopra tutto il resto */
+    padding: 20px;
+    font-family: var(--font-primary);
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+.modal-content {
+    background-color: #282828; /* Grigio scuro per contenuto modal */
+    padding: 30px 35px;
+    border: var(--border-width-modal) solid var(--color-accent);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.6);
+    max-width: 480px;
+    width: 95%;
+    color: var(--color-text);
+    text-align: left;
+    position: relative;
+    border-radius: 0; /* Bordi netti stile retro */
+    animation: scaleUp 0.2s ease-out forwards;
+}
+
+.modal-content h2 {
+    font-size: 1.3em;
+    color: var(--color-accent);
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 0px var(--color-secondary);
+}
+
+/* Stili Form dentro i Modal */
+.modal-content .form-group {
+    margin-bottom: 20px;
+}
+.modal-content label {
+    display: block;
+    font-size: 0.75em;
+    margin-bottom: 8px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+.modal-content input[type="text"],
+.modal-content input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: var(--color-dark);
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    font-family: var(--font-primary);
+    font-size: 0.8em;
+    border-radius: var(--border-radius-slight);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.modal-content input[type="text"]:focus,
+.modal-content input[type="password"]:focus {
+    outline: none;
+    border-color: var(--color-highlight);
+    box-shadow: 0 0 8px rgba(255, 255, 0, 0.5);
+}
+
+/* Bottoni dentro i Modal */
+.modal-content .modal-buttons {
+    text-align: center;
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap; /* Va a capo se non c'è spazio */
+    justify-content: center;
+    gap: 15px;
+}
+.modal-content .modal-buttons .retro-button {
+    margin-bottom: 0; /* Usa gap */
+    flex-grow: 1; /* Si espande per riempire spazio */
+    min-width: 120px; /* Larghezza minima */
+}
+@media (min-width: 400px) {
+     .modal-content .modal-buttons .retro-button {
+        flex-grow: 0; /* Non espandere su schermi più larghi */
+    }
+}
+
+/* Link per cambiare form (Registrazione/Login) */
+.switch-form-link {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 0.7em;
+    color: var(--color-text-secondary);
+}
+
+/* Separatore orizzontale nei Modal */
+.separator {
+    border: none;
+    height: 2px;
+    background-image: linear-gradient(to right, transparent, var(--color-accent), transparent);
+    margin: 30px 0;
+}
+
+/* Sezione cambio password nel Modal Gestione Account */
+.toggle-password-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+#new-password-section.hidden { /* Nasconde la sezione */
+    display: none;
+}
+
+/* Stili Classifica nel Modal Classifica */
+.leaderboard {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 20px;
+    margin-bottom: 25px;
+    counter-reset: leaderboard-counter; /* Per numerazione automatica */
+}
+.leaderboard li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px dashed var(--color-text-secondary);
+    counter-increment: leaderboard-counter;
+    font-size: 0.8em;
+    color: var(--color-text);
+}
+.leaderboard li:last-child {
+    border-bottom: none;
+}
+.leaderboard li::before { /* Numero classifica */
+    content: counter(leaderboard-counter) ".";
+    font-weight: normal;
+    color: var(--color-highlight);
+    min-width: 25px;
+    text-align: right;
+    margin-right: 10px;
+    font-size: 1.1em;
+}
+.rank-name { /* Nome giocatore */
+    flex-grow: 1;
+    text-align: left;
+    margin-right: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Puntini se troppo lungo */
+    white-space: nowrap;
+}
+.rank-score { /* Punteggio */
+    font-weight: normal;
+    color: var(--color-primary);
+    min-width: 40px;
+    text-align: right;
+}
+.user-rank { /* Info posizione utente loggato */
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid var(--color-accent);
+    text-align: center;
+    font-size: 0.8em;
+    color: var(--color-highlight);
+}
+
+/* ============================ */
+/* --- STILI SPECIFICI GIOCO --- */
+/* ============================ */
+#game-board {
+    display: block; /* Rimuove spazio sotto */
+    width: 100%;
+    height: 100%;
+}
+
+/* Overlay Game Over */
+.game-over-overlay {
+    position: absolute; /* Sovrapposto al canvas */
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.85); /* Sfondo scuro traslucido */
+    color: var(--color-text);
+    display: none; /* Mostrato da JS con .active */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-family: var(--font-primary);
+    z-index: 500; /* Sopra il canvas ma sotto i modal */
+    padding: 20px;
+    box-sizing: border-box;
+    line-height: 1.8;
+    animation: fadeIn 0.3s ease-out forwards;
+}
+.game-over-overlay h2 {
+    color: var(--color-danger);
+    font-size: 2.2em;
+    text-shadow: 3px 3px 0px var(--color-highlight);
+    margin: 0; padding: 10px 0; line-height: 1.2;
+}
+.game-over-overlay p {
+    font-size: 1em;
+    margin: 20px 0;
+}
+#punteggio-finale {
+    color: var(--color-primary);
+    font-size: 1.1em;
+}
+#restart-button {
+    margin-top: 15px;
+    margin-bottom: 0; /* Nessun margine sotto se è l'ultimo elemento */
+}
+
+/* Commento: I colori specifici usati nel canvas (JS) dovrebbero corrispondere */
+/* alle variabili CSS per coerenza (es. COLOR_SNAKE_BODY in JS -> var(--color-snake-body)) */
+
+/* ============================ */
+/* --- STATI (MODIFICATORI) --- */
+/* ============================ */
+
+/* --- Modalità Gioco Attiva --- */
+/* Nasconde elementi non di gioco */
+body.game-active > h1,
+body.game-active > .punteggio-container {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+    overflow: hidden; /* Assicura collasso completo */
+}
+
+/* Mostra elementi di gioco */
+body.game-active > #home-button {
+    display: inline-block; /* Mostra bottone Home */
+}
+body.game-active > .in-game-score-display {
+    display: block; /* Mostra punteggio in-game */
+    opacity: 1;
+    max-height: 100px; /* Permette al contenuto di essere visibile */
+    margin-bottom: 15px; /* Spazio sotto il punteggio */
+    padding: 5px 0; /* Ripristina padding */
+}
+
+/* Ajusta Margine Container Gioco */
+body.game-active .game-container {
+    margin-top: 0; /* Rimuove spazio sopra se c'era */
+    margin-bottom: 5vh; /* Margine sotto ridotto in modalità gioco */
+    /* transform: scale(1.02); */ /* Effetto zoom opzionale */
+}
+
+/* --- Modal Attivo --- */
+.modal-overlay.active {
+    display: flex; /* Rende il modal visibile */
+}
+
+/* --- Game Over Attivo --- */
+.game-over-overlay.active {
+    display: flex; /* Rende l'overlay visibile */
+}
+
+
+/* ============================ */
+/* --- ANIMAZIONI --- */
+/* ============================ */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.9); opacity: 0.5; }
+    to { transform: scale(1); opacity: 1; }
+}
